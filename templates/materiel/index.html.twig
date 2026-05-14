@@ -1,0 +1,99 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste du matériel{% endblock %}
+
+{% block body %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Liste du matériel</h1>
+    <a href="{{ path('materiel_new') }}" class="btn btn-success">+ Ajouter</a>
+</div>
+
+<table id="materielTable" class="table table-striped table-bordered">
+    <thead>
+        <tr>
+            <th>Nom</th>
+            <th>Prix HT</th>
+            <th>TVA</th>
+            <th>Prix TTC</th>
+            <th>Quantité</th>
+            <th>Date création</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+</table>
+
+{# Modal voir #}
+<div class="modal fade" id="voirModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Détail du matériel</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="voirModalBody">
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+$(document).ready(function () {
+    const table = $('#materielTable').DataTable({
+        serverSide: true,
+        processing: true,
+        ajax: '{{ path('materiel_api_list') }}',
+        columns: [
+            { data: 'nom' },
+            { data: 'prixHT' },
+            { data: 'tva' },
+            { data: 'prixTTC' },
+            { data: 'quantite' },
+            { data: 'dateCreation' },
+            {
+                data: 'id',
+                orderable: false,
+                render: function (id) {
+                    return `
+                        <button class="btn btn-sm btn-info btn-voir" data-id="${id}">Voir</button>
+                        <a href="/materiel/${id}/edit" class="btn btn-sm btn-warning">Modifier</a>
+                        <a href="/materiel/${id}/pdf" class="btn btn-sm btn-secondary" target="_blank">PDF</a>
+                        <button class="btn btn-sm btn-danger btn-decrement" data-id="${id}">Décrémenter</button>
+                    `;
+                }
+            }
+        ],
+        language: {
+            url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/fr-FR.json'
+        }
+    });
+
+    // Bouton Voir
+    $('#materielTable').on('click', '.btn-voir', function () {
+        const id = $(this).data('id');
+        $.get(`/materiel/${id}`, function (data) {
+            $('#voirModalBody').html(`
+                <ul class="list-group">
+                    <li class="list-group-item"><strong>Nom :</strong> ${data.nom}</li>
+                    <li class="list-group-item"><strong>Prix HT :</strong> ${data.prixHT}</li>
+                    <li class="list-group-item"><strong>TVA :</strong> ${data.tva}</li>
+                    <li class="list-group-item"><strong>Prix TTC :</strong> ${data.prixTTC}</li>
+                    <li class="list-group-item"><strong>Quantité :</strong> ${data.quantite}</li>
+                    <li class="list-group-item"><strong>Date création :</strong> ${data.dateCreation}</li>
+                </ul>
+            `);
+            new bootstrap.Modal(document.getElementById('voirModal')).show();
+        });
+    });
+
+    // Bouton Décrémenter
+    $('#materielTable').on('click', '.btn-decrement', function () {
+        const id = $(this).data('id');
+        $.post(`/materiel/${id}/decrement`, { _token: '' }, function () {
+            table.ajax.reload();
+        });
+    });
+});
+</script>
+{% endblock %}

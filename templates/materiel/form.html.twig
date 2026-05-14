@@ -1,0 +1,71 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ titre }}{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h1 class="mb-4">{{ titre }}</h1>
+        {{ form_start(form, {'attr': {'id': 'materielForm'}}) }}
+            <div class="mb-3">
+                {{ form_label(form.nom) }}
+                {{ form_widget(form.nom, {'attr': {'class': 'form-control'}}) }}
+            </div>
+            <div class="mb-3">
+                {{ form_label(form.prixHT) }}
+                {{ form_widget(form.prixHT, {'attr': {'class': 'form-control', 'id': 'prixHT'}}) }}
+            </div>
+            <div class="mb-3">
+                {{ form_label(form.tva) }}
+                {{ form_widget(form.tva, {'attr': {'class': 'form-select', 'id': 'tvaSelect'}}) }}
+            </div>
+            <div class="mb-3">
+                {{ form_label(form.prixTTC) }}
+                {{ form_widget(form.prixTTC, {'attr': {'class': 'form-control', 'id': 'prixTTC'}}) }}
+            </div>
+            <div class="mb-3">
+                {{ form_label(form.quantite) }}
+                {{ form_widget(form.quantite, {'attr': {'class': 'form-control'}}) }}
+            </div>
+            <button type="submit" class="btn btn-primary">Enregistrer</button>
+            <a href="{{ path('materiel_index') }}" class="btn btn-secondary">Annuler</a>
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+    let tvaData = {};
+
+    // Charger les valeurs TVA depuis l'API
+    fetch('/tva/api')
+        .then(r => r.json())
+        .then(data => {
+            data.forEach(t => tvaData[t.id] = t.valeur);
+        });
+
+    function getTvaValeur() {
+        const id = document.getElementById('materiel_tva').value;
+        return tvaData[id] || 0;
+    }
+
+    function recalculerTTC() {
+        const ht = parseFloat(document.getElementById('materiel_prixHT').value) || 0;
+        const tva = getTvaValeur();
+        document.getElementById('materiel_prixTTC').value = (ht * (1 + tva)).toFixed(2);
+    }
+
+    function recalculerHT() {
+        const ttc = parseFloat(document.getElementById('materiel_prixTTC').value) || 0;
+        const tva = getTvaValeur();
+        if (tva > 0) {
+            document.getElementById('materiel_prixHT').value = (ttc / (1 + tva)).toFixed(2);
+        }
+    }
+
+    document.getElementById('materiel_prixHT').addEventListener('input', recalculerTTC);
+    document.getElementById('materiel_prixTTC').addEventListener('input', recalculerHT);
+    document.getElementById('materiel_tva').addEventListener('change', recalculerTTC);
+</script>
+{% endblock %}
