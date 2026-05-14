@@ -1,12 +1,15 @@
 # Module Matériel - Symfony
 
 Application de gestion de matériel avec suivi de stock, développée avec Symfony 7.
-
 ## Prérequis
 
 - PHP 8.2+
 - Composer
 - Symfony CLI
+
+> Les instructions d'installation ci-dessous sont écrites pour **Linux (Fedora)**. 
+> Sur Windows ou Mac, les commandes d'installation des outils peuvent différer 
+> mais le projet fonctionne sur tous les OS.
 
 ## Installation
 
