@@ -151,4 +151,17 @@ class MaterielController extends AbstractController
             ]
         );
     }
+    #[Route('/{id}', name: 'materiel_show', methods: ['GET'], requirements: ['id' => '\d+'])]
+    public function show(Materiel $materiel): JsonResponse
+    {
+        return new JsonResponse([
+            'id'          => $materiel->getId(),
+            'nom'         => $materiel->getNom(),
+            'prixHT'      => number_format($materiel->getPrixHT(), 2) . ' €',
+            'tva'         => $materiel->getTva()->getLibelle(),
+            'prixTTC'     => number_format($materiel->getPrixTTC(), 2) . ' €',
+            'quantite'    => $materiel->getQuantite(),
+            'dateCreation'=> $materiel->getDateCreation()->format('d/m/Y'),
+        ]);
+    }
 }
